@@ -50,7 +50,7 @@ object.size(stack("./bio_10m_bil/biostack.tif"))
 232632 bytes
 quit()
 ```
-![Fisical Raster Stack](https://github.com/Model-R/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostackTIFF.png?raw=true)
+![Fisical Raster Stack](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/biostackTIFF.png?raw=true)
 
 ### b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 
@@ -74,7 +74,7 @@ object.size(stack("./bio_10m_bil/biostackCropTIFF.tif"))
 quit()
 ```
 
-![Fisical Raster Stack Cropped](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostackCropTIFF.png?raw=true)
+![Fisical Raster Stack Cropped](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/biostackCropTIFF.png?raw=true)
 
 ### c. cropping the raster stack for a bounding box and resampling the pixel size.
 
@@ -97,7 +97,7 @@ object.size(stack("./bio_10m_bil/stackCropResTIFF.tif"))
 232936 bytes
 quit()
 ```
-![](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostackCropResTIFF.png?raw=true)
+![](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/biostackCropResTIFF.png?raw=true)
 
 ## Gdal alternative raster management
 **(Using gdal tools using the Vitrual Raster Stack)**
@@ -141,9 +141,9 @@ dev.off()
 quit()
 ```
   
-![Vitual Raster Stack](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostack.png?raw=true)
+![Vitual Raster Stack](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/biostack.png?raw=true)
   
-![Virtual Raster Stack Bio10](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/bio1.png?raw=true)
+![Virtual Raster Stack Bio10](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/bio1.png?raw=true)
   
 ## b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 
@@ -170,7 +170,7 @@ object.size(stack("./bio_10m_bil/biostackCrop.vrt"))
 quit()
 ```
 
-![Virtual Raster Stack Cropped](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostackCrop.png?raw=true)
+![Virtual Raster Stack Cropped](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/biostackCrop.png?raw=true)
 
 #### Getting info about Virtual Raster Stack cropped
 ```
@@ -281,7 +281,7 @@ png("./bio_10m_bil/Images/stackCropTest.png")
 plot(stackCropTest)
 dev.off()
 ```
-![stackCropTest](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/images/stackCropTest.png?raw=true)
+![stackCropTest](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/stackCropTest.png?raw=true)
 
 ### c. cropping the raster stack for a bounding box and resampling the pixel size.
 
@@ -307,7 +307,7 @@ ls -lh ./bio_10m_bil/stackCropResTest.vrt
 
 # [GDAL2Tiles](http://www.gdal.org/gdal2tiles.html)
 
-**Description: **
+**Description:**
 This utility generates a directory with small tiles and metadata, following the OSGeo Tile Map Service Specification. Simple web pages with viewers based on Google Maps, OpenLayers and Leaflet are generated as well - so anybody can comfortably explore your maps on-line and you do not need to install or configure any special software (like MapServer) and the map displays very fast in the web browser. You only need to upload the generated directory onto a web server.
 GDAL2Tiles also creates the necessary metadata for Google Earth (KML SuperOverlay), in case the supplied map uses EPSG:4326 projection.
 World files and embedded georeferencing is used during tile generation, but you can publish a picture without proper georeferencing too.
