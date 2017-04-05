@@ -2,56 +2,151 @@
 
 Repository created to test a few possibilities for raster management.
 
-When working with ENM we must to deal with raster as data input (abiotic data) and output (the main outpu of ENM are raster data);
+## The challange
+When working with ENM we must to deal with raster as data input (abiotic data) and output (the main outpu of ENM are raster data).
+As those files will be required for several projects and experiments in differents extentions and pixelresolution, would be strategical define the *best* way to manage the rasters used as input and those generated as output.
+The idea of this repository is to test a few possibilities for a better raster management. For now we will explore **PostGIS** and **gdal** functions as raster management tools. 
+The original raster dataset used in this tests are from Worldclim 10 min. bio variables (`./bio_10m_bil`, with TIFF extension).
 
-The idea is to test **PostGIS** and **gdal** functions as raster management tools. For now we will use Worldclim 10 min bio raster data located in `./bio_10m_bil`.
+The management will consider:
+a. stacking all raw data;
+b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
+c. cropping the raster stack for a bounding box and resampling the pixel size.
+d. mixing in the raster stack raster data with different pixel size, Coordinate Reference System, ...;
 
-1. Using gdal tools
-With gdal tools, each abiotic raster input from the dataset will be kept in the HD as a fisical file.
-As those files will be required for several projects and experiments in differents extention woulb be strategical to use the [**Virtual Raster Stack**](http://www.gdal.org/gdal_vrttut.html), which is a XML with small size, indicating the rasters files that it is composed by, the extent of the study and others information (must take a look about metadata).
-By using .vrt format redundancy of raster creating would be avoided as well as file size would be reduced. Also, would bepossible to have only the extent under interest loaded for the model process.
-The Virtual Raster Stack uses the strategy of [lazy avaluation](https://en.wikipedia.org/wiki/Lazy_evaluation). The [Lazyevaluation was compared ](http://www.perrygeo.com/lazy-raster-processing-with-gdal-vrts.html). More links [here](http://www.paolocorti.net/2012/03/08/gdal_virtual_formats/)
+Three possibilities documented here are:
+1. **Busness as usual**: Managing all raster files in fisical format with gdal tools.
+2. **Virtual Raster Stack**: Managing all raster files as virtual raster stack with gdal tools keeping only raw (origin) data as fisical raster file.
+3. **PostGIS**: All raster data will be included and managed in a postGIS repository with SQL language;
+
+## Business as Usual 
+**(Using gdal tools and keeping all raster files in fisical format)**
+
+### a. stacking all raw data;
+```
+cd Projetos/Marinez/Model-R/modelo-bd/RasterData/bio_10m_bil
+Raster_listing=`ls *.tif`
+echo $Raster_listing
+
+# Using fisical Raster Stack
+gdal_merge.py -o biostack.tif -of "GTiff" -v -separate -pct $Raster_listing
+
+# File size
+ls -lh biostack.tif
+-rw-rw-r-- 1 felipe felipe 71M Apr  4 08:52 biostack.tif
+```
+
+#### Testing the result of fisical raster stack (.tif)
+
+```
+R
+library(raster)
+png("./Images/biostackTIFF")
+plot(stack("./biostack.tif")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
+dev.off()
+quit()
+```
+![Fisical Raster Stack](https://github.com/Model-R/modelo-bd/blob/master/Images/biostackTIFF.png?raw=true)
+
+### b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
+
+```
+gdalwarp biostackCrop.vrt -te -75.0 -40.0 -33.0 -4.5 -overwrite -of "GTiff" biostackCropTIFF.tif -multi
+ls -lh biostackCropTIFF.tif
+-rw-rw-r-- 1 felipe felipe 2.0M Apr  5 10:46 biostackCropTIFF.tif
+```
+
+#### Testing the crop 
+```
+R
+library(raster)
+png("./Images/biostackCropTIFF.png")
+plot(stack("./biostackCropTIFF.tif")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
+dev.off()
+quit()
+```
+
+![Fisical Raster Stack Cropped](https://github.com/Model-R/modelo-bd/blob/master/Images/biostackCropTIFF.png?raw=true)
+
+### c. cropping the raster stack for a bounding box and resampling the pixel size.
+
+```
+gdalwarp biostack.vrt -te -75.0 -40.0 -33.0 -4.5 -tr 0.25 0.25 -overwrite -of "GTiff" stackCropResTIFF.tif
+```
+
+#### Testing the crop and resampling 
+```
+R
+library(raster)
+png("./Images/biostackCropResTIFF.png")
+plot(stack("./stackCropResTIFF.tif")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
+dev.off()
+quit()
+```
+
+## Gdal alternative raster management
+**(Using gdal tools using the Vitrual Raster Stack)**
+  
+The [**Virtual Raster Stack**](http://www.gdal.org/gdal_vrttut.html) is a XML with small size, indicating the origin rasters files (which must be in fisical format) that it is composed by, the extent of the study and others information (must take a look about **metadata**, later).
+By using .vrt format redundancy of raster creating is avoided as well as file size would be reduced. Also, would bepossible to have only the extent under interest loaded for the model process, among others raster processing possibilities.
+The Virtual Raster Stack uses the strategy of [lazy avaluation](https://en.wikipedia.org/wiki/Lazy_evaluation). The [Lazy evaluation was compared ](http://www.perrygeo.com/lazy-raster-processing-with-gdal-vrts.html). More links [here](http://www.paolocorti.net/2012/03/08/gdal_virtual_formats/)
+
+### a. stacking all raw data;
 
 ```
 cd Projetos/Marinez/Model-R/modelo-bd/RasterData/bio_10m_bil
 Raster_listing=`ls *.tif`
 echo $Raster_listing
+
+# Using Virtual Raster Stack:
 # Merging all bio raster data to one single virtual raster stack
 gdalbuildvrt biostack.vrt -separate -overwrite $Raster_listing
 
+# File size
+ls -lh biostack.vrt
+-rw-rw-r-- 1 felipe felipe 11K Apr  4 12:08 biostack.vrt
 ```
+
 ### Testing the result of Virtual Raster Stack
 
 ```
 R
-png("./images/biostack")
+library(raster)
+png("./Images/biostack")
 plot(stack("./biostack.vrt")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
 dev.off()
-png("./images/bio1")
+png("./Images/bio1")
 plot(raster("./biostack.vrt")) # plotting only the first band of .vrt file
 dev.off()
 quit()
 ```
-![Vitual Raster Stack](https://github.com/Model-R/modelo-bd/blob/master/images/biostack.png?raw=true)
+  
+![Vitual Raster Stack](https://github.com/Model-R/modelo-bd/blob/master/Images/biostack.png?raw=true)
+  
+![Virtual Raster Stack Bio10](https://github.com/Model-R/modelo-bd/blob/master/Images/bio1.png?raw=true)
+  
+## b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 
-![Virtual Raster Stack Bio10](https://github.com/Model-R/modelo-bd/blob/master/images/bio1.png?raw=true)
-
-Also it is possible to create others Virtual Raster Stack from another, changing extention and resolution:
 ```
 gdalbuildvrt biostackCrop.vrt -te -75.0 -40.0 -33.0 -4.5 -overwrite biostack.vrt
+ls -lh biostackCrop.vrt
+-rw-rw-r-- 1 felipe felipe 12K Apr  4 18:41 biostackCrop.vrt
 ```
-In the exemple above, the Virtual Raster Stack to a bounding box.
+
+### Testing the crop 
 
 ```
 R
+library(raster)
 png("./images/biostackCrop")
 plot(stack("./biostackCrop.vrt")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
 dev.off()
 quit()
 ```
 
-![Virtual Raster Stack Cropped](https://github.com/Model-R/modelo-bd/blob/master/images/biostackCrop.png?raw=true)
+![Virtual Raster Stack Cropped](https://github.com/Model-R/modelo-bd/blob/master/Images/biostackCrop.png?raw=true)
 
+#### Getting info about Virtual Raster Stack cropped
 ```
 gdalinfo biostackCrop.vrt
 Driver: VRT/Virtual Raster
@@ -136,29 +231,33 @@ Band 19 Block=128x128 Type=Int16, ColorInterp=Undefined
   NoData Value=-9999
 ```
 
-## Testing the possibility to used in a R function:
+#### Testing the possibility to used in a R function:
 
 ```
-> library(raster)
-> library(gdalUtils)
-> stack <- stack("./biostack.vrt")
+R
+library(raster)
+library(gdalUtils)
+stack <- stack("./biostack.vrt")
+
 # Estimating object size of .vrt
-> object.size(stack)
+object.size(stack)
 244616 bytes
+
 # Estimating object size of .tif files stack
-> r <- stack(list.files("./", pattern=".tif$"))
-> object.size(r)
+r <- stack(list.files("./", pattern=".tif$"))
+
+object.size(r)
 451056 bytes
 
 # Loading shapefile to be used to crop
-> BA <- shapefile("./shp/BA.shp")
+BA <- shapefile("./shp/BA.shp")
 
 # Boundbox of the shapefile to be used
-> c(BA@bbox)
+c(BA@bbox)
 [1] -46.616668 -18.348743 -37.342503  -8.533223
-> crop <- BA
+crop <- BA
 # Using gdalbuildvrt R function
-> gdalbuildvrt("./biostack.vrt", "./stackCropTest.vrt", te=c(crop@bbox), overwrite=TRUE, verbose = TRUE)
+gdalbuildvrt("./biostack.vrt", "./stackCropTest.vrt", te=c(crop@bbox), overwrite=TRUE, verbose = TRUE)
 Checking gdal_installation...
 Scanning for GDAL installations...
 Checking the gdalUtils_gdalPath option...
@@ -167,34 +266,29 @@ GDAL command being used: "/usr/bin/gdalbuildvrt" -te -46.6166679288199 -18.34874
 NULL
 
 # Testing theresult
-> stackCropTest <- stack("./stackCropTest.vrt")
-> png("./stackCropTest")
-> plot(stackCropTest)
-> dev.off()
-null device 
-          1 
-> object.size(stackCropTest)
+stackCropTest <- stack("./stackCropTest.vrt")
+png("./stackCropTest")
+plot(stackCropTest)
+dev.off()
+
+object.size(stackCropTest)
 244792 bytes
 ```
 ![stackCropTest](https://github.com/Model-R/modelo-bd/blob/master/images/stackCropTest.png?raw=true)
 
-## Testing the same function but changing the resolution
+### c. cropping the raster stack for a bounding box and resampling the pixel size.
 
 ```
-> gdalbuildvrt("./biostack.vrt", "./stackCropResTest.vrt", te=c(crop@bbox), tr=c(0.25,0.25), overwrite=TRUE, verbose = TRUE)
-Checking gdal_installation...
-Scanning for GDAL installations...
-Checking the gdalUtils_gdalPath option...
-GDAL version 2.1.0
-GDAL command being used: "/usr/bin/gdalbuildvrt" -te -46.6166679288199 -18.3487434400106 -37.342502905043 -8.53322288319805 -tr 0.25 0.25 -overwrite  "./stackCropResTest.vrt" "./biostack.vrt"
-NULL
-> stackCropResTest <- stack("./stackCropResTest.vrt")
-> png("./stackCropResTest")
-> plot(stackCropResTest)
-> dev.off()
-null device 
-          1 
-> object.size(stackCropResTest)
+R
+library(raster)
+library(gdalUtils)
+gdalbuildvrt("./biostack.vrt", "./stackCropResTest.vrt", te=c(crop@bbox), tr=c(0.25,0.25), overwrite=TRUE, verbose = TRUE)
+stackCropResTest <- stack("./stackCropResTest.vrt")
+png("./stackCropResTest")
+plot(stackCropResTest)
+dev.off()
+
+object.size(stackCropResTest)
 244936 bytes
 ```
 
