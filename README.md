@@ -41,7 +41,7 @@ ls -lh biostack.tif
 ```
 R
 library(raster)
-png("./bio_10m_bil/Images/biostackTIFF")
+png("./bio_10m_bil/Images/biostackTIFF.png")
 plot(stack("./bio_10m_bil/biostack.tif")) # plotting all bands of .tif file (i.e.: all bioclimatic raster)
 dev.off()
 
@@ -97,6 +97,7 @@ object.size(stack("./bio_10m_bil/stackCropResTIFF.tif"))
 232936 bytes
 quit()
 ```
+![](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostackCropResTIFF.png?raw=true)
 
 ## Gdal alternative raster management
 **(Using gdal tools using the Vitrual Raster Stack)**
@@ -126,7 +127,7 @@ ls -lh ./bio_10m_bil/biostack.vrt
 ```
 R
 library(raster)
-png("./bio_10m_bil/Images/biostack")
+png("./bio_10m_bil/Images/biostack.png")
 plot(stack("./bio_10m_bil/biostack.vrt")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
 dev.off()
 
@@ -134,7 +135,7 @@ dev.off()
 object.size(stack("./bio_10m_bil/biostack.vrt"))
 244616 bytes
 
-png("./bio_10m_bil/Images/bio1")
+png("./bio_10m_bil/Images/bio1.png")
 plot(raster("./bio_10m_bil/biostack.vrt")) # plotting only the first band of .vrt file
 dev.off()
 quit()
@@ -158,7 +159,7 @@ ls -lh biostackCrop.vrt
 ```
 R
 library(raster)
-png("./bio_10m_bil/Images/biostackCrop")
+png("./bio_10m_bil/Images/biostackCrop.png")
 plot(stack("./bio_10m_bil/biostackCrop.vrt"))
 dev.off()
 
@@ -276,7 +277,7 @@ gdalbuildvrt("./bio_10m_bil/biostack.vrt", "./bio_10m_bil/stackCropTest.vrt", te
 
 # Testing the result
 stackCropTest <- stack("./bio_10m_bil/stackCropTest.vrt")
-png("./bio_10m_bil/Images/stackCropTest")
+png("./bio_10m_bil/Images/stackCropTest.png")
 plot(stackCropTest)
 dev.off()
 ```
@@ -290,7 +291,7 @@ library(raster)
 library(gdalUtils)
 gdalbuildvrt("./bio_10m_bil/biostack.vrt", "./bio_10m_bil/stackCropResTest.vrt", te=c(crop@bbox), tr=c(0.25,0.25), overwrite=TRUE, verbose = TRUE)
 stackCropResTest <- stack("./bio_10m_bil/stackCropResTest.vrt")
-png("./bio_10m_bil/Images/stackCropResTest")
+png("./bio_10m_bil/Images/stackCropResTest.png")
 plot(stackCropResTest)
 dev.off()
 
@@ -302,7 +303,7 @@ ls -lh ./bio_10m_bil/stackCropResTest.vrt
 12 -rw-rw-r-- 1 felipe felipe 11516 Apr  4 22:35 ./stackCropResTest.vrt
 ```
 
-![stackCropResTest](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/images/stackCropResTest?raw=true)
+![stackCropResTest](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/images/stackCropResTest.png?raw=true)
 
 # [GDAL2Tiles](http://www.gdal.org/gdal2tiles.html)
 
