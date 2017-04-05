@@ -19,7 +19,7 @@ Three possibilities documented here are:
 2. **Virtual Raster Stack**: Managing all raster files as virtual raster stack with gdal tools keeping only raw (origin) data as fisical raster file.
 3. **PostGIS**: All raster data will be included and managed in a postGIS repository with SQL language;
 
-## Business as Usual 
+## 1. Business as Usual 
 **(Using gdal tools and keeping all raster files in fisical format)**
 
 ### a. stacking all raw data;
@@ -41,12 +41,16 @@ ls -lh biostack.tif
 ```
 R
 library(raster)
-png("./Images/biostackTIFF")
-plot(stack("./biostack.tif")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
+png("./bio_10m_bil/Images/biostackTIFF")
+plot(stack("./bio_10m_bil/biostack.tif")) # plotting all bands of .tif file (i.e.: all bioclimatic raster)
 dev.off()
+
+# object size in R environment
+object.size(stack("./bio_10m_bil/biostack.tif"))
+232632 bytes
 quit()
 ```
-![Fisical Raster Stack](https://github.com/Model-R/modelo-bd/blob/master/Images/biostackTIFF.png?raw=true)
+![Fisical Raster Stack](https://github.com/Model-R/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostackTIFF.png?raw=true)
 
 ### b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 
@@ -60,27 +64,37 @@ ls -lh biostackCropTIFF.tif
 ```
 R
 library(raster)
-png("./Images/biostackCropTIFF.png")
-plot(stack("./biostackCropTIFF.tif")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
+png("./bio_10m_bil/Images/biostackCropTIFF.png")
+plot(stack("./bio_10m_bil/biostackCropTIFF.tif")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
 dev.off()
+
+# object size in R environment
+object.size(stack("./bio_10m_bil/biostackCropTIFF.tif"))
+232936 bytes
 quit()
 ```
 
-![Fisical Raster Stack Cropped](https://github.com/Model-R/modelo-bd/blob/master/Images/biostackCropTIFF.png?raw=true)
+![Fisical Raster Stack Cropped](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostackCropTIFF.png?raw=true)
 
 ### c. cropping the raster stack for a bounding box and resampling the pixel size.
 
 ```
-gdalwarp biostack.vrt -te -75.0 -40.0 -33.0 -4.5 -tr 0.25 0.25 -overwrite -of "GTiff" stackCropResTIFF.tif
+gdalwarp biostack.tif -te -75.0 -40.0 -33.0 -4.5 -tr 0.25 0.25 -overwrite -of "GTiff" stackCropResTIFF.tif
+
+ls -lh stackCropResTIFF.tif-rw-rw-r-- 1 felipe felipe 887K Apr  5 15:01 stackCropResTIFF.tif
 ```
 
 #### Testing the crop and resampling 
+
 ```
 R
 library(raster)
-png("./Images/biostackCropResTIFF.png")
-plot(stack("./stackCropResTIFF.tif")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
+png("./bio_10m_bil/Images/biostackCropResTIFF.png")
+plot(stack("./bio_10m_bil/stackCropResTIFF.tif"))
 dev.off()
+
+object.size(stack("./bio_10m_bil/stackCropResTIFF.tif"))
+232936 bytes
 quit()
 ```
 
@@ -100,10 +114,10 @@ echo $Raster_listing
 
 # Using Virtual Raster Stack:
 # Merging all bio raster data to one single virtual raster stack
-gdalbuildvrt biostack.vrt -separate -overwrite $Raster_listing
+gdalbuildvrt ./bio_10m_bil/biostack.vrt -separate -overwrite $Raster_listing
 
 # File size
-ls -lh biostack.vrt
+ls -lh ./bio_10m_bil/biostack.vrt
 -rw-rw-r-- 1 felipe felipe 11K Apr  4 12:08 biostack.vrt
 ```
 
@@ -112,23 +126,29 @@ ls -lh biostack.vrt
 ```
 R
 library(raster)
-png("./Images/biostack")
-plot(stack("./biostack.vrt")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
+png("./bio_10m_bil/Images/biostack")
+plot(stack("./bio_10m_bil/biostack.vrt")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
 dev.off()
-png("./Images/bio1")
-plot(raster("./biostack.vrt")) # plotting only the first band of .vrt file
+
+# object size:
+object.size(stack("./bio_10m_bil/biostack.vrt"))
+244616 bytes
+
+png("./bio_10m_bil/Images/bio1")
+plot(raster("./bio_10m_bil/biostack.vrt")) # plotting only the first band of .vrt file
 dev.off()
 quit()
 ```
   
-![Vitual Raster Stack](https://github.com/Model-R/modelo-bd/blob/master/Images/biostack.png?raw=true)
+![Vitual Raster Stack](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostack.png?raw=true)
   
-![Virtual Raster Stack Bio10](https://github.com/Model-R/modelo-bd/blob/master/Images/bio1.png?raw=true)
+![Virtual Raster Stack Bio10](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/bio1.png?raw=true)
   
 ## b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 
 ```
 gdalbuildvrt biostackCrop.vrt -te -75.0 -40.0 -33.0 -4.5 -overwrite biostack.vrt
+
 ls -lh biostackCrop.vrt
 -rw-rw-r-- 1 felipe felipe 12K Apr  4 18:41 biostackCrop.vrt
 ```
@@ -138,13 +158,18 @@ ls -lh biostackCrop.vrt
 ```
 R
 library(raster)
-png("./images/biostackCrop")
-plot(stack("./biostackCrop.vrt")) # plotting all bands of .vrt file (i.e.: all bioclimatic raster)
+png("./bio_10m_bil/Images/biostackCrop")
+plot(stack("./bio_10m_bil/biostackCrop.vrt"))
 dev.off()
+
+# object size
+object.size(stack("./bio_10m_bil/biostackCrop.vrt"))
+244616 bytes
+
 quit()
 ```
 
-![Virtual Raster Stack Cropped](https://github.com/Model-R/modelo-bd/blob/master/Images/biostackCrop.png?raw=true)
+![Virtual Raster Stack Cropped](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/Images/biostackCrop.png?raw=true)
 
 #### Getting info about Virtual Raster Stack cropped
 ```
@@ -237,44 +262,25 @@ Band 19 Block=128x128 Type=Int16, ColorInterp=Undefined
 R
 library(raster)
 library(gdalUtils)
-stack <- stack("./biostack.vrt")
-
-# Estimating object size of .vrt
-object.size(stack)
-244616 bytes
-
-# Estimating object size of .tif files stack
-r <- stack(list.files("./", pattern=".tif$"))
-
-object.size(r)
-451056 bytes
+stack <- stack("./bio_10m_bil/biostack.vrt")
 
 # Loading shapefile to be used to crop
-BA <- shapefile("./shp/BA.shp")
+BA <- shapefile("./bio_10m_bil/shp/BA.shp")
 
 # Boundbox of the shapefile to be used
 c(BA@bbox)
 [1] -46.616668 -18.348743 -37.342503  -8.533223
 crop <- BA
 # Using gdalbuildvrt R function
-gdalbuildvrt("./biostack.vrt", "./stackCropTest.vrt", te=c(crop@bbox), overwrite=TRUE, verbose = TRUE)
-Checking gdal_installation...
-Scanning for GDAL installations...
-Checking the gdalUtils_gdalPath option...
-GDAL version 2.1.0
-GDAL command being used: "/usr/bin/gdalbuildvrt" -te -46.6166679288199 -18.3487434400106 -37.342502905043 -8.53322288319805 -overwrite  "./stackCropTest.vrt" "./biostack.vrt"
-NULL
+gdalbuildvrt("./bio_10m_bil/biostack.vrt", "./bio_10m_bil/stackCropTest.vrt", te=c(crop@bbox), overwrite=TRUE, verbose = TRUE)
 
-# Testing theresult
-stackCropTest <- stack("./stackCropTest.vrt")
-png("./stackCropTest")
+# Testing the result
+stackCropTest <- stack("./bio_10m_bil/stackCropTest.vrt")
+png("./bio_10m_bil/Images/stackCropTest")
 plot(stackCropTest)
 dev.off()
-
-object.size(stackCropTest)
-244792 bytes
 ```
-![stackCropTest](https://github.com/Model-R/modelo-bd/blob/master/images/stackCropTest.png?raw=true)
+![stackCropTest](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/images/stackCropTest.png?raw=true)
 
 ### c. cropping the raster stack for a bounding box and resampling the pixel size.
 
@@ -282,17 +288,21 @@ object.size(stackCropTest)
 R
 library(raster)
 library(gdalUtils)
-gdalbuildvrt("./biostack.vrt", "./stackCropResTest.vrt", te=c(crop@bbox), tr=c(0.25,0.25), overwrite=TRUE, verbose = TRUE)
-stackCropResTest <- stack("./stackCropResTest.vrt")
-png("./stackCropResTest")
+gdalbuildvrt("./bio_10m_bil/biostack.vrt", "./bio_10m_bil/stackCropResTest.vrt", te=c(crop@bbox), tr=c(0.25,0.25), overwrite=TRUE, verbose = TRUE)
+stackCropResTest <- stack("./bio_10m_bil/stackCropResTest.vrt")
+png("./bio_10m_bil/Images/stackCropResTest")
 plot(stackCropResTest)
 dev.off()
 
 object.size(stackCropResTest)
 244936 bytes
+quit()
+
+ls -lh ./bio_10m_bil/stackCropResTest.vrt
+12 -rw-rw-r-- 1 felipe felipe 11516 Apr  4 22:35 ./stackCropResTest.vrt
 ```
 
-![stackCropResTest](https://github.com/Model-R/modelo-bd/blob/master/images/stackCropResTest.png?raw=true)
+![stackCropResTest](https://github.com/Model-R/RasterMngmt/bio_10m_bil/blob/master/images/stackCropResTest.png?raw=true)
 
 # [GDAL2Tiles](http://www.gdal.org/gdal2tiles.html)
 
