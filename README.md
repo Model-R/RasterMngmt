@@ -303,7 +303,7 @@ ls -lh ./bio_10m_bil/stackCropResTest.vrt
 12 -rw-rw-r-- 1 felipe felipe 11516 Apr  4 22:35 ./stackCropResTest.vrt
 ```
 
-![stackCropResTest](https://github.com/Model-R/RasterMngmt/bio_10m_bil/Images/stackCropResTest.png?raw=true)
+![stackCropResTest](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/stackCropResTest.png?raw=true)
 
 # [GDAL2Tiles](http://www.gdal.org/gdal2tiles.html)
 
