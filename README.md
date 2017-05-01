@@ -318,3 +318,98 @@ World files and embedded georeferencing is used during tile generation, but you 
 **Description:**
 This utility will retile a set of input tile(s). All the input tile(s) must be georeferenced in the same coordinate system and have a matching number of bands. Optionally pyramid levels are generated. It is possible to generate shape file(s) for the tiled output.
 If your number of input tiles exhausts the command line buffer, use the general –optfile option
+
+
+## 3. PostGIS
+This approach is based by [this blog post](https://duncanjg.wordpress.com/2012/10/28/postgis-raster/)
+Mus consider using [-l OVERVIEW_FACTOR](https://postgis.net/docs/using_raster_dataman.html) when using raster hosted in database for visualzation
+-F
+##### Creating a data base to host raster data:
+```
+sudo su postgres
+createdb rastertest
+psql rastertest
+CREATE EXTENSION postgis;
+CREATE EXTENSION postgis_topology;
+CREATE TABLE myrasters(rid serial primary key, rast raster, filename text);
+```
+##### Importing all rasters to rastertest database
+See importRasterPG.sh for more info on raster import preparation;
+```
+./importRasterPG.sh
+```
+#### Estimating its size 
+```
+psql rastertest
+
+SELECT pg_size_pretty( pg_database_size( current_database() ) ) As human_size;
+
+ human_size 
+------------
+ 27 MB
+(1 row)
+
+```
+
+```{r}
+R
+
+library(raster)
+library(rgdal)
+
+dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='myrasters' mode=2"
+
+ras <- raster(readGDAL(dsn)) # Get your file as SpatialGridDataFrame
+
+PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='myrasters' mode=2 has GDAL driver PostGISRaster 
+and has 900 rows and 2160 columns
+
+png("./bio_10m_bil/Images/biostackPostGIS.png")
+plot(ras[[1]])
+dev.off()
+
+# object size in R environment
+object.size(ras)
+7787904 bytes
+quit()
+```
+### b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
+
+PostGIS data processing
+```
+CREATE TABLE clippingtable as
+with PolClip as (select ST_GeometryFromText('POLYGON((-75 -33,-75 -4.5,-40 -4.5,-40 -33,-75 -33))', 4326) as geom) 
+select st_union(
+	st_clip(myrasters.rast, p.geom, TRUE)
+	) as rast from myrasters, PolClip as p where myrasters.filename = 'bio1.bil' and ST_Intersects(myrasters.rast, p.geom)
+
+
+SELECT AddRasterConstraints('public'::name, 'clippingtable'::name, 'rast'::name);
+```
+Acessing data from R
+
+```
+# loading croped raster
+dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='clippingtable' mode=2"
+ras <- raster(readGDAL(dsn))
+plot(ras)
+```
+##### To implement soon
+```
+extent <- as(extent(c(-75.0, -40.0, -33.0, -4.5 )), 'SpatialPolygons')
+
+coords <- apply(extent@polygons[[1]]@Polygons[[1]]@coords, 1, paste, collapse=" ")
+
+coords <- paste(coords, collapse=",")
+geomClip <- sprintf("select ST_GeometryFromText('POLYGON((%s))', 4326)", coords);
+
+
+# A) Loading raster but selecting a specific layer (bio1)
+dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='myrasters' -sql 'SELECT * FROM myrasters where filename = 'bio1.bil'' mode=2"
+
+ras <- raster(readGDAL(dsn))
+plot(ras)
+
+```
+
+### c. cropping the raster stack for a bounding box and resampling the pixel size.
