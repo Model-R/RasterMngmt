@@ -413,3 +413,18 @@ plot(ras)
 ```
 
 ### c. cropping the raster stack for a bounding box and resampling the pixel size.
+
+```
+library(rgdal)
+library(raster)
+rm(ras)
+dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='biocrop' -sql 'SELECT * FROM biocrop where filename = 'registro 1'' mode=1"
+
+dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='biocrop' mode=1"
+
+ras <- stack(readGDAL(dsn))
+plot(ras)
+plot(ras[[2]])
+plot(ras[[1]])
+
+```
