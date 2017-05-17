@@ -420,9 +420,9 @@ library(raster)
 rm(ras)
 dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='biocrop' -sql 'SELECT * FROM biocrop where filename = 'registro 1'' mode=1"
 
-dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='biocrop' mode=1"
+dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='biocropview' mode=1"
 
-ras <- stack(readGDAL(dsn))
+ras <- stack(readGDAL(dsn)[[c(1,2,3)]])
 plot(ras)
 plot(ras[[2]])
 plot(ras[[1]])
