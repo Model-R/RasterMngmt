@@ -8,16 +8,26 @@ As those files will be required for several projects and experiments in differen
 The idea of this repository is to test a few possibilities for a better raster management. For now we will explore **PostGIS** and **gdal** functions as raster management tools. 
 The original raster dataset used in this tests are from Worldclim 10 min. bio variables (`./bio_10m_bil`, with TIFF extension).
 
-The management will consider:
+### The test management will consider:
 a. stacking all raw data;
 b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 c. cropping the raster stack for a bounding box and resampling the pixel size.
 d. mixing in the raster stack raster data with different pixel size, Coordinate Reference System, ...;
 
-Three possibilities documented here are:
-1. **Busness as usual**: Managing all raster files in fisical format with gdal tools.
-2. **Virtual Raster Stack**: Managing all raster files as virtual raster stack with gdal tools keeping only raw (origin) data as fisical raster file.
-3. **PostGIS**: All raster data will be included and managed in a postGIS repository with SQL language;
+### Three possibilities documented here are:
+1. **Busness as usual**: Managing all raster files in fisical format with gdal tools (like *.tif).
+2. **Virtual Raster Stack**: Managing all raster files as virtual raster stack (*.vrt) with gdal tools keeping only raw (original) data as fisical raster file (*.tif).
+3. **PostGIS**: All raster data will be stored and managed in a postGIS repository with SQL language;
+
+# Executive summary
+
+|       Raster  Management      	| Original dataset stack (ODS)  	|    ODS in R   	| Croped dataset 	| Cropped dataset in R 	|
+|:-----------------------------:	|:-----------------------------:	|:-------------:	|:--------------:	|:--------------------:	|
+| Fisical raster format (*.tif) 	|              71M              	|  232632 bytes 	|      2.0M      	|     232936 bytes     	|
+| Virtual raster format (*.vrt) 	|             11K *             	|  244616 bytes 	|       12K      	|     244616 bytes     	|
+|            PostGIS            	|              27 M             	| 7787904 bytes 	|      64 K      	|     155544 bytes     	|
+
+# Management Tests
 
 ## 1. Business as Usual 
 **(Using gdal tools and keeping all raster files in fisical format)**
@@ -99,8 +109,8 @@ quit()
 ```
 ![](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/biostackCropResTIFF.png?raw=true)
 
-## Gdal alternative raster management
-**(Using gdal tools using the Vitrual Raster Stack)**
+## 2. Gdal Virtual Raster Management
+**(Using gdal tools but Vitrual Raster Stack instead of *.tif)**
   
 The [**Virtual Raster Stack**](http://www.gdal.org/gdal_vrttut.html) is a XML with small size, indicating the origin rasters files (which must be in fisical format) that it is composed by, the extent of the study and others information (must take a look about **metadata**, later).
 By using .vrt format redundancy of raster creating is avoided as well as file size would be reduced. Also, would bepossible to have only the extent under interest loaded for the model process, among others raster processing possibilities.
@@ -145,7 +155,7 @@ quit()
   
 ![Virtual Raster Stack Bio10](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/bio1.png?raw=true)
   
-## b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
+### b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 
 ```
 gdalbuildvrt biostackCrop.vrt -te -75.0 -40.0 -33.0 -4.5 -overwrite biostack.vrt
@@ -257,7 +267,8 @@ Band 19 Block=128x128 Type=Int16, ColorInterp=Undefined
   NoData Value=-9999
 ```
 
-#### Testing the possibility to used in a R function:
+#### Testing the possibility to use in a R function:
+**(if considering this approach, the code above could be used to build the function for writting raster)**
 
 ```
 R
@@ -305,26 +316,15 @@ ls -lh ./bio_10m_bil/stackCropResTest.vrt
 
 ![stackCropResTest](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/stackCropResTest.png?raw=true)
 
-# [GDAL2Tiles](http://www.gdal.org/gdal2tiles.html)
-
-**Description:**
-This utility generates a directory with small tiles and metadata, following the OSGeo Tile Map Service Specification. Simple web pages with viewers based on Google Maps, OpenLayers and Leaflet are generated as well - so anybody can comfortably explore your maps on-line and you do not need to install or configure any special software (like MapServer) and the map displays very fast in the web browser. You only need to upload the generated directory onto a web server.
-GDAL2Tiles also creates the necessary metadata for Google Earth (KML SuperOverlay), in case the supplied map uses EPSG:4326 projection.
-World files and embedded georeferencing is used during tile generation, but you can publish a picture without proper georeferencing too.
-
-
-# [gdal_retile](http://www.gdal.org/gdal_retile.html)
-
-**Description:**
-This utility will retile a set of input tile(s). All the input tile(s) must be georeferenced in the same coordinate system and have a matching number of bands. Optionally pyramid levels are generated. It is possible to generate shape file(s) for the tiled output.
-If your number of input tiles exhausts the command line buffer, use the general –optfile option
-
 
 ## 3. PostGIS
 This approach is based by [this blog post](https://duncanjg.wordpress.com/2012/10/28/postgis-raster/)
-Mus consider using [-l OVERVIEW_FACTOR](https://postgis.net/docs/using_raster_dataman.html) when using raster hosted in database for visualzation
+Must consider using [-l OVERVIEW_FACTOR](https://postgis.net/docs/using_raster_dataman.html) when using raster hosted in database for visualzation.
 -F
-##### Creating a data base to host raster data:
+
+### a. stacking all raw data;
+
+#### Creating a data base to host raster data:
 ```
 sudo su postgres
 createdb rastertest
@@ -373,9 +373,11 @@ object.size(ras)
 7787904 bytes
 quit()
 ```
+
 ### b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 
-PostGIS data processing
+**Shearching about ways of storing those datas and having tested a few possibilities (all that I could realize) I could say that we eill have to save the `cliped` raster data in a different table (or view) for each experiment and/or project. This is because in a raster table, each row are used to store each tile of the raster (if any). So, the only way to store more than one raster layer in the same table is storing it as a different band. And band can only be added to a raster table if having the same pixel size, extent, coordinate reference system, among others. Actually this must apply for every rasterdata according to [gdal data model](http://www.gdal.org/gdal_datamodel.html)**
+
 ```
 CREATE TABLE clippingtable as
 with PolClip as (select ST_GeometryFromText('POLYGON((-75 -33,-75 -4.5,-40 -4.5,-40 -33,-75 -33))', 4326) as geom) 
@@ -394,7 +396,7 @@ dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' p
 ras <- raster(readGDAL(dsn))
 plot(ras)
 ```
-##### To implement soon
+##### To implement as tool, if necessary **(Not ready yet)**
 ```
 extent <- as(extent(c(-75.0, -40.0, -33.0, -4.5 )), 'SpatialPolygons')
 
@@ -413,6 +415,7 @@ plot(ras)
 ```
 
 ### c. cropping the raster stack for a bounding box and resampling the pixel size.
+**Not tested yet**
 
 ```
 library(rgdal)
@@ -428,3 +431,21 @@ plot(ras[[2]])
 plot(ras[[1]])
 
 ```
+
+
+# -----
+# Random information
+## [GDAL2Tiles](http://www.gdal.org/gdal2tiles.html)
+
+**Description:**
+This utility generates a directory with small tiles and metadata, following the OSGeo Tile Map Service Specification. Simple web pages with viewers based on Google Maps, OpenLayers and Leaflet are generated as well - so anybody can comfortably explore your maps on-line and you do not need to install or configure any special software (like MapServer) and the map displays very fast in the web browser. You only need to upload the generated directory onto a web server.
+GDAL2Tiles also creates the necessary metadata for Google Earth (KML SuperOverlay), in case the supplied map uses EPSG:4326 projection.
+World files and embedded georeferencing is used during tile generation, but you can publish a picture without proper georeferencing too.
+
+
+## [gdal_retile](http://www.gdal.org/gdal_retile.html)
+
+**Description:**
+This utility will retile a set of input tile(s). All the input tile(s) must be georeferenced in the same coordinate system and have a matching number of bands. Optionally pyramid levels are generated. It is possible to generate shape file(s) for the tiled output.
+If your number of input tiles exhausts the command line buffer, use the general –optfile option
+
