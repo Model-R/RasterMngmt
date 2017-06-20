@@ -65,7 +65,8 @@ quit()
 ### b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 
 ```
-gdalwarp biostackCrop.vrt -te -75.0 -40.0 -33.0 -4.5 -overwrite -of "GTiff" biostackCropTIFF.tif -multi
+gdalwarp biostack.tif -te -75.0 -40.0 -33.0 -4.5 -overwrite -of "GTi
+ff" biostackCropTIFF.tif -multi
 ls -lh biostackCropTIFF.tif
 -rw-rw-r-- 1 felipe felipe 2.0M Apr  5 10:46 biostackCropTIFF.tif
 ```
@@ -295,7 +296,14 @@ dev.off()
 ![stackCropTest](https://github.com/Model-R/RasterMngmt/blob/master/bio_10m_bil/Images/stackCropTest.png?raw=true)
 
 ### c. cropping the raster stack for a bounding box and resampling the pixel size.
+```
+# No Bash
+gdalbuildvrt biostack.tif -te -75.0 -40.0 -33.0 -4.5 -tr 0.25 0.25 -overwrite  stackCropResTest.vrt
 
+gdalbuildvrt("./bio_10m_bil/biostack.vrt", "./bio_10m_bil/stackCropResTest.vrt", te=c(crop@bbox), tr=c(0.25,0.25), overwrite=TRUE, verbose = TRUE)
+```
+#### Testing the possibility to use in a R function:
+**(if considering this approach, the code above could be used to build the function for writting raster)**
 ```
 R
 library(raster)
