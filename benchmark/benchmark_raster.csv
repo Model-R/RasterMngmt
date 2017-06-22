@@ -1,0 +1,7 @@
+real;user;kernel;operacao;armazenamento
+70.368;47.923;22.237;stacking;fisical
+15.441;10.494;4.758;cropping;fisical
+13.648;9.628;3.953;cropping + resampling;fisical
+8.075;6.154;1.861;stacking;virtual
+5.388;3.724;1.608;cropping;virtual
+0;0;0;cropping + resampling;virtual
