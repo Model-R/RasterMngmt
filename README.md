@@ -339,6 +339,7 @@ psql rastertest
 CREATE EXTENSION postgis;
 CREATE EXTENSION postgis_topology;
 CREATE TABLE myrasters(rid serial primary key, rast raster, filename text);
+\q # Exit from rastertest database
 ```
 ##### Importing all rasters to rastertest database
 See importRasterPG.sh for more info on raster import preparation;
@@ -398,6 +399,10 @@ SELECT AddRasterConstraints('public'::name, 'clippingtable'::name, 'rast'::name)
 Acessing data from R
 
 ```
+R
+library(raster)
+library(rgdal)
+library(RPostgreSQL)
 # loading croped raster
 dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' port=5432 schema='public' table='clippingtable' mode=2"
 ras <- raster(readGDAL(dsn))
