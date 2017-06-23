@@ -384,7 +384,7 @@ quit()
 
 ### b. cropping the raster stack for a bounding box of interest (simulating the study area and projection area);
 
-**Shearching about ways of storing those datas and having tested a few possibilities (all that I could realize) I could say that we eill have to save the `cliped` raster data in a different table (or view) for each experiment and/or project. This is because in a raster table, each row are used to store each tile of the raster (if any). So, the only way to store more than one raster layer in the same table is storing it as a different band. And band can only be added to a raster table if having the same pixel size, extent, coordinate reference system, among others. Actually this must apply for every rasterdata according to [gdal data model](http://www.gdal.org/gdal_datamodel.html)**
+**Shearching about ways of storing those datas and having tested a few possibilities (all that I could realize) I could say that we will have to save the `cliped` raster data in a different table (or view) for each experiment and/or project. This is because in a raster table, each row are used to store each tile of the raster (if any). So, the only way to store more than one raster layer in the same table is storing it as a different band. And band can only be added to a raster table if having the same pixel size, extent, coordinate reference system, among others. Actually this must apply for every rasterdata according to [gdal data model](http://www.gdal.org/gdal_datamodel.html)**
 
 ```
 CREATE TABLE clippingtable as
@@ -408,7 +408,7 @@ dsn="PG:dbname='rastertest' host=localhost user='postgres' password='postgres' p
 ras <- raster(readGDAL(dsn))
 plot(ras)
 ```
-##### To implement as tool, if necessary **(Not ready yet)**
+##### To implement as `R` tool, if necessary **(Not ready yet)**
 ```
 extent <- as(extent(c(-75.0, -40.0, -33.0, -4.5 )), 'SpatialPolygons')
 
@@ -427,7 +427,8 @@ plot(ras)
 ```
 
 ### c. cropping the raster stack for a bounding box and resampling the pixel size.
-**Not tested yet**
+
+##### To implement as `R` tool, if necessary **(Not ready yet)**
 
 ```
 library(rgdal)
