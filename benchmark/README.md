@@ -127,3 +127,8 @@ como foi apresentado.
 * Estou considerando que o [glob](http://mywiki.wooledge.org/glob) para as operações de stacking
   ([1](https://github.com/Model-R/RasterMngmt#a-stacking-all-raw-data),[2](https://github.com/Model-R/RasterMngmt#a-stacking-all-raw-data-1)) é
   `bio?([0-9])[0-9].tif` e não `*.tif`.
+
+# Reading Benchmark
+Uma vez que o .vrt se propõe a descrever as transformações para que as mesmas só sejam processadas ao serem usadas, resolvi analisar o tempo tomado para leitura de cada uma das formas possíveis aqui analisadas: leitura dos rasters armazenados no banco de dados PostGIS (no gráfico, "PostGIS"), formati virtual (".vrt") e o formato TIFF (".tif").
+
+![Gráfico comparativo das leituras dos rasters stack](./BenchMark.png)
