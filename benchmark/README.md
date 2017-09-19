@@ -92,19 +92,29 @@ O CSV resultante foi lido e plotado com ggplot2:
 
 ```{r}
 bench <- read.csv("./benchmark_raster.csv", sep=';')
-benchPostGIS <- (list.files("./", pattern = "_mod"))
-tables <- lapply(benchPostGIS, read.csv, sep=";")
+bench <- bench[,c(1,4,5)]
+
+benchPostGIS <- (list.files("./", pattern = "benchmark_rasterCrop"))
+tables <- lapply(benchPostGIS, read.csv, sep=";", header=FALSE)
 library(data.table)
 tables <- rbindlist(tables)
-tables <- rbind(tables, bench)
+names(tables)
+library(plyr)
+result$V4 <- as.character(result$V4)
+result[1,1] <- "cropping"
+names(result) <- c("operacao", "real")
+result$armazenamento <- "PostGIS"
+result <- result[,c(2,1,3)]
+
+tables <- rbind(result, bench)
 bench <- tables
 # Reordena o factor para stacking ser impresso primeiro no gráfico
-bench$operacao <- factor(bench$operacao, levels(bench$operacao)[c(3,1,2)])
-
+bench$operacao <- factor(bench$operacao, as.factor(bench$operacao)[c(3,1,2)])
 # Plota o gráfico
 library(ggplot2)
 ggplot(bench, aes(operacao,real, fill=armazenamento)) +
   geom_bar(stat='identity', position=position_dodge())
+
 ```
 
 ![Gráfico comparativo de operações com raster](plot.png)
